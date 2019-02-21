@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math"
+	"os"
+	"strconv"
+	"strings"
 )
 
 var trainingSet = map[[4]uint8]uint8{
@@ -118,8 +122,6 @@ func main() {
 	n1.learningRate = 0.3
 	n1.train()
 
-	fmt.Println("TEST: 0,0,1,0")
-	fmt.Println("RESULT:", n1.calculate([4]uint8{0, 0, 1, 0}))
 	fmt.Println("-----\nstart with sigmoid function")
 	n2 := neuron{weights: [5]float64{0, 0, 0, 0, 0}}
 	n2.aFunction = sigmoidFunc
@@ -127,6 +129,21 @@ func main() {
 	n2.learningRate = 0.3
 	n2.train()
 
-	fmt.Println("TEST: 0,0,1,0")
-	fmt.Println("RESULT:", n2.calculate([4]uint8{0, 0, 1, 0}))
+	scan := bufio.NewScanner(os.Stdin)
+	fmt.Println("input set for test:")
+	for scan.Scan() {
+		var testSet [4]uint8
+		rawText := scan.Text()
+		splitedText := strings.Split(rawText, ",")
+		fmt.Println("input :", splitedText)
+		for i, element := range splitedText {
+			parsed, err := strconv.Atoi(element)
+			if err != nil {
+				return
+			}
+			testSet[i] = uint8(parsed)
+		}
+		fmt.Println("With threshold:", n1.calculate(testSet))
+		fmt.Println("With sigmoid:", n2.calculate(testSet))
+	}
 }
