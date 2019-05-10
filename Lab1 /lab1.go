@@ -7,6 +7,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/notnil/combos"
 )
 
 var trainingSet = map[[4]uint8]uint8{
@@ -29,6 +31,25 @@ var trainingSet = map[[4]uint8]uint8{
 	{1, 1, 0, 1}: 0,
 	{1, 1, 1, 0}: 1,
 	{1, 1, 1, 1}: 1,
+}
+
+var booleanTable = [][4]uint8{
+	{0, 0, 0, 0},
+	{0, 0, 0, 1},
+	{0, 0, 1, 0},
+	{0, 0, 1, 1},
+	{0, 1, 0, 0},
+	{0, 1, 0, 1},
+	{0, 1, 1, 0},
+	{0, 1, 1, 1},
+	{1, 0, 0, 0},
+	{1, 0, 0, 1},
+	{1, 0, 1, 0},
+	{1, 0, 1, 1},
+	{1, 1, 0, 0},
+	{1, 1, 0, 1},
+	{1, 1, 1, 0},
+	{1, 1, 1, 1},
 }
 
 type neuron struct {
@@ -89,14 +110,14 @@ func printResults(results map[[4]uint8]uint8) {
 		fmt.Println(k, v)
 	}
 }
-func (n *neuron) train() {
-	i := 0 //epoch
+func (n *neuron) train(trainSet map[[4]uint8]uint8) bool {
+	epoch := 0
 	for {
 		var results = map[[4]uint8]uint8{}
-		fmt.Println("\n------\nEpoch:", i)
+		fmt.Println("\n------\nEpoch:", epoch)
 		fmt.Println("Weights:", n.weights)
 		summaryErr := 0
-		for set, idealValue := range trainingSet {
+		for set, idealValue := range trainSet {
 			result := n.calculate(set)
 			results[set] = result
 			if result != idealValue {
@@ -107,27 +128,50 @@ func (n *neuron) train() {
 		}
 		fmt.Println("Summary error:", summaryErr)
 		if summaryErr == 0 {
+			fmt.Println("---Done---")
 			printResults(results)
 			break
 		}
-		i++
+		if epoch > 30 {
+			return false
+		}
+		epoch++
+	}
+	return true
+}
+func getMinSet(n neuron) {
+	for i := 0; i < 16; i++ {
+		for _, indexArray := range combos.New(16, i) {
+			fmt.Println(indexArray)
+			newTrainSet := make(map[[4]uint8]uint8)
+			for j := 0; j < len(indexArray); j++ {
+				newTrainSet[booleanTable[j]] = trainingSet[booleanTable[j]]
+			}
+			if n.train(newTrainSet) {
+				set := make([][4]uint8, 0)
+				for k := range newTrainSet {
+					set = append(set, k)
+				}
+				fmt.Println("Done ! Min set is :", set)
+				return
+			}
+		}
 	}
 }
-
 func main() {
-	fmt.Println("start with threshold function")
+	fmt.Println("-----\nstart with threshold function")
 	n1 := neuron{weights: [5]float64{0, 0, 0, 0, 0}}
 	n1.aFunction = thresholdFunction
 	n1.aFunctionName = "threshold"
 	n1.learningRate = 0.3
-	n1.train()
+	n1.train(trainingSet)
 
 	fmt.Println("-----\nstart with sigmoid function")
 	n2 := neuron{weights: [5]float64{0, 0, 0, 0, 0}}
 	n2.aFunction = sigmoidFunc
 	n2.aFunctionName = "sigmoid"
 	n2.learningRate = 0.3
-	n2.train()
+	n2.train(trainingSet)
 
 	scan := bufio.NewScanner(os.Stdin)
 	fmt.Println("input set for test:")
