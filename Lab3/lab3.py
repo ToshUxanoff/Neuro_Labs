@@ -1,5 +1,5 @@
 import math
-
+from itertools import combinations
 #constanats
 RBF_number = 7
 boolean_table = [
@@ -28,7 +28,6 @@ class HiddenNeuron:
     def calculate(self, input_set):
         result = 0
         sum = 0
-        #print (input_set, self.c_set)
         for i in range(0, 4):
             sum += (input_set[i] - self.c_set[i])**2
         result = math.exp(-sum)
@@ -54,35 +53,49 @@ class Neuron:
             deltaw = self.learningRate * delta * f[j]
             self.weights[j] += deltaw
 
-def train(hidden_layer, neuron, training_set):
-    print('train')
+def check(hidden_layer, neuron, training_set):
+    for vector, ideal_out in training_set.items():
+        hidden_layer_out = []
+        for hidden_neuron in hidden_layer:
+            hidden_layer_out.append(hidden_neuron.calculate(vector))
+        real_out = neuron.calculate_output(hidden_layer_out)
+        if real_out != ideal_out:
+            return False
+    return True
+
+def train(hidden_layer, neuron, training_set, quiet = False):
     epoch = 0
     while True:
-        vector_index = 0
         summaryError = 0
         results = []
-        for vector in boolean_table:
+        for vector in training_set.keys():
             hidden_layer_out = []
             for hidden_neuron in hidden_layer:
                 hidden_layer_out.append(hidden_neuron.calculate(vector))
             real_out = neuron.calculate_output(hidden_layer_out)
             results.append(real_out)
-            delta = training_set[vector_index] - real_out
+            delta = training_set[vector] - real_out
             if delta:
                 summaryError += 1
                 neuron.correct_weight(delta, hidden_layer_out)
-            vector_index += 1
+            
         if summaryError == 0:
+            if not quiet:
+                print_epoch_results(results, epoch, summaryError, neuron.weights)
+                print('--Done--')
+            return True
+        if not quiet:
             print_epoch_results(results, epoch, summaryError, neuron.weights)
-            print('--Done--')
-            return
-        print_epoch_results(results, epoch, summaryError, neuron.weights)
+        if epoch > 50:
+            print('fail')
+            return False
         epoch += 1
             
 def print_epoch_results(results, epoch, error, weights):
     print('-'*50, '\nresults:\n', results, '\n', '-'*50)
-    print('Epoch:', epoch, "Summary error:", error)
-    print('Weights:', weights)
+    print('Epoch:', epoch, "Summary error: {:5f}".format (error))
+    formatted_weights = ['%.7f' % w for w in weights]
+    print('Weights:', formatted_weights)
 
 def calculate_training_set():
     result_vector = []
@@ -94,7 +107,18 @@ def calculate_training_set():
             centers.append(vector)
     return result_vector, centers
 
-
+def calc_min_training_set(hidden_layer, neuron, t_set):
+    for i in range(1, 16):
+        for sets in combinations(boolean_table, i):
+            min_train_set = dict()
+            for one_set in sets:
+                min_train_set[one_set] = t_set[one_set]
+            result = train(hidden_layer, neuron, min_train_set, quiet = True)
+            if result:
+                ch = check(hidden_layer, neuron, t_set)
+                if ch:
+                    print('@'*50, '\nmin set is ', min_train_set)
+                    return min_train_set
 
 if __name__ == '__main__':
     training_set, centers = calculate_training_set()
@@ -105,4 +129,9 @@ if __name__ == '__main__':
         hidden_layer.append(rbf_neuron)
         print('Added neuron with :',rbf_neuron.c_set)
     n1 = Neuron()
+    training_set = dict(zip(boolean_table, training_set))
     train(hidden_layer, n1, training_set)
+
+    n2 = Neuron()
+    n2.weights = [0 for i in range(RBF_number + 1)]
+    min_set = calc_min_training_set(hidden_layer, n2, training_set)

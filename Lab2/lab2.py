@@ -3,9 +3,10 @@ import numpy
 import matplotlib.pyplot as mplt
 
 class Neuron:
-    weights = [0 for i in range (5)]
-    learningRate = 0.8
-    p = 4
+    def __init__(self, lr = 0.5, p = 4):
+        self.learningRate = lr
+        self.p = p
+        self.weights = [0 for i in range (p + 1)]
     
     def calc_net(self, xlist):
         net = 0
@@ -20,17 +21,19 @@ class Neuron:
             self.weights[k] += deltaw
 
 def calc_summary_err(ideal, results):
-    sum = 0
+    sum_ = 0
     for i, res in enumerate(results):
-        sum += (ideal[i] - res)**2
-    return math.sqrt(sum)
+        sum_ += (ideal[i] - res)**2
+    return math.sqrt(sum_)
 
 def print_epoch_results(results, epoch, error, weights):
-    print('-'*50, '\nresults:\n', results, '\n', '-'*50)
-    print('Epoch:', epoch, "Summary error:", error)
-    print('Weights:', weights)
+    formatted_results = ['%.5f' % r for r in results]
+    print('-'*50, '\nresults:\n', formatted_results, '\n', '-'*50)
+    print('Epoch:', epoch, "Summary error: {:5f}".format (error))
+    formatted_weights = ['%.5f' % w for w in weights]
+    print('Weights:', formatted_weights)
 
-def train(neuron, trainset):
+def train(neuron, trainset, max_epoch = None):
     epoch = 0
     p = neuron.p
     while True:
@@ -42,55 +45,57 @@ def train(neuron, trainset):
             delta = trainset[i] - net 
             if delta:
                 neuron.correct_weight(delta, trainset[i-p:i])
-        summaryErr = calc_summary_err(trainset, results)
+                summaryErr += delta **2
+        summaryErr = math.sqrt(summaryErr)
         print_epoch_results(results, epoch, summaryErr, neuron.weights)
-        if epoch > 60000:
-         #   return
-        #if summaryErr < 0.5:
+        if summaryErr < 0.001:
             print('Done!')
             return
+        if max_epoch is not None:
+            if epoch > max_epoch:
+                print('max epoch reached')
+                return 
         epoch += 1
     
 def predict(neuron, trainset):
     tset = trainset[:]
-    i = 16
+    i = 20 - neuron.p
     while i < 35:
         result = neuron.calc_net(tset[-neuron.p:])
         tset.append(result)
         i += 1
-    print('predicted length:', len(tset))
     return tset
 
-def calc_train_set():
+def calc_train_set(a, b):
     t_set = []
-    for t in numpy.arange(0, 4.2, 0.2):
+    step = 0.2
+    for t in numpy.arange(a, b + step, step):
         tmp = 0.5*math.cos(0.5*t)- math.sin(t)
-        
         t_set.append(tmp)
     return t_set
 
-def tmp():
+def calc_real_x(a, b):
     t_set = []
-    for t in numpy.arange(0, 8, 0.2):
+    step = 0.2
+    for t in numpy.arange(a, 2*b + step, 0.2):
         tmp = 0.5*math.cos(0.5*t) - math.sin(t)
-        
         t_set.append(tmp)
-    print('length:', len(t_set))
     return t_set
 
 if __name__ == "__main__":
-    n1 = Neuron()
-    trainset = calc_train_set()
-    train(n1, trainset)
-    
-    print('ideal:', tmp())
+    n1 = Neuron(0.4, 4)
+    n2 = Neuron(0.8, 4)
+    a = 0
+    b = 4
+    trainset = calc_train_set(a, b)
+    train(n1, trainset, 2000)
+    train(n2, trainset, 5000)
+
     predicted = predict(n1, trainset)
+    predicted2 = predict(n2, trainset)
     print('-'*50,'\npredicted:\n', predicted)
     
-    y = [i for i in numpy.arange(0, 8, 0.2)]
-    print(len(y))
-    x = tmp()
-    mplt.plot(y, x, color = 'r')
-    x = predicted
-    mplt.plot(y, x, color='g')
+    mplt.plot(calc_real_x(a, b), color = 'r')
+    mplt.plot(predicted, color='g')
+    mplt.plot(predicted2, color = 'b')
     mplt.show()

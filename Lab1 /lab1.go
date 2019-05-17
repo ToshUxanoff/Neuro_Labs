@@ -173,6 +173,12 @@ func main() {
 	n2.learningRate = 0.3
 	n2.train(trainingSet)
 
+	n3 := neuron{weights: [5]float64{0, 0, 0, 0, 0}}
+	n3.aFunction = thresholdFunction
+	n3.aFunctionName = "threshold"
+	n3.learningRate = 0.3
+	getMinSet(n3)
+	getMinSet(n1)
 	scan := bufio.NewScanner(os.Stdin)
 	fmt.Println("input set for test:")
 	for scan.Scan() {
