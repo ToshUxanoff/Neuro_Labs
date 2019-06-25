@@ -59,7 +59,9 @@ def check(hidden_layer, neuron, training_set):
         for hidden_neuron in hidden_layer:
             hidden_layer_out.append(hidden_neuron.calculate(vector))
         real_out = neuron.calculate_output(hidden_layer_out)
+        print('Vector:', vector,'Neuronet out:', real_out, '\tIdeal out:', ideal_out)
         if real_out != ideal_out:
+            print('fail!')
             return False
     return True
 
@@ -78,10 +80,10 @@ def train(hidden_layer, neuron, training_set, quiet = False):
             if delta:
                 summaryError += 1
                 neuron.correct_weight(delta, hidden_layer_out)
-            
+        
         if summaryError == 0:
             if not quiet:
-                print_epoch_results(results, epoch, summaryError, neuron.weights)
+                print_epoch_results(results, epoch, summaryError, None)
                 print('--Done--')
             return True
         if not quiet:
@@ -94,8 +96,9 @@ def train(hidden_layer, neuron, training_set, quiet = False):
 def print_epoch_results(results, epoch, error, weights):
     print('-'*50, '\nresults:\n', results, '\n', '-'*50)
     print('Epoch:', epoch, "Summary error: {:5f}".format (error))
-    formatted_weights = ['%.7f' % w for w in weights]
-    print('Weights:', formatted_weights)
+    if weights is not None:
+        formatted_weights = ['%.7f' % w for w in weights]
+        print('Weights:', formatted_weights)
 
 def calculate_training_set():
     result_vector = []
@@ -107,18 +110,21 @@ def calculate_training_set():
             centers.append(vector)
     return result_vector, centers
 
-def calc_min_training_set(hidden_layer, neuron, t_set):
+def calc_min_training_set(hidden_layer, t_set):
     for i in range(1, 16):
         for sets in combinations(boolean_table, i):
+            neuron = Neuron()
+            neuron.weights = [0 for i in range(RBF_number + 1)]
             min_train_set = dict()
             for one_set in sets:
                 min_train_set[one_set] = t_set[one_set]
             result = train(hidden_layer, neuron, min_train_set, quiet = True)
+            print('new iteration of calc min set:{}'.format(min_train_set))
             if result:
                 ch = check(hidden_layer, neuron, t_set)
                 if ch:
                     print('@'*50, '\nmin set is ', min_train_set)
-                    return min_train_set
+                    return neuron
 
 if __name__ == '__main__':
     training_set, centers = calculate_training_set()
@@ -132,6 +138,5 @@ if __name__ == '__main__':
     training_set = dict(zip(boolean_table, training_set))
     train(hidden_layer, n1, training_set)
 
-    n2 = Neuron()
-    n2.weights = [0 for i in range(RBF_number + 1)]
-    min_set = calc_min_training_set(hidden_layer, n2, training_set)
+    n = calc_min_training_set(hidden_layer, training_set)
+    print('weights:', n.weights)

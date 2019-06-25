@@ -36,6 +36,7 @@ def print_epoch_results(results, epoch, error, weights):
 def train(neuron, trainset, max_epoch = None):
     epoch = 0
     p = neuron.p
+    error_list = []
     while True:
         summaryErr = 0
         results = []
@@ -47,14 +48,14 @@ def train(neuron, trainset, max_epoch = None):
                 neuron.correct_weight(delta, trainset[i-p:i])
                 summaryErr += delta **2
         summaryErr = math.sqrt(summaryErr)
-        print_epoch_results(results, epoch, summaryErr, neuron.weights)
+        #print_epoch_results(results, epoch, summaryErr, neuron.weights)
         if summaryErr < 0.001:
             print('Done!')
-            return
+            return summaryErr
         if max_epoch is not None:
             if epoch > max_epoch:
                 print('max epoch reached')
-                return 
+                return summaryErr
         epoch += 1
     
 def predict(neuron, trainset):
@@ -71,31 +72,53 @@ def calc_train_set(a, b):
     step = 0.2
     for t in numpy.arange(a, b + step, step):
         tmp = 0.5*math.cos(0.5*t)- math.sin(t)
+
         t_set.append(tmp)
     return t_set
-
-def calc_real_x(a, b):
-    t_set = []
-    step = 0.2
-    for t in numpy.arange(a, 2*b + step, 0.2):
-        tmp = 0.5*math.cos(0.5*t) - math.sin(t)
-        t_set.append(tmp)
-    return t_set
-
+        
 if __name__ == "__main__":
-    n1 = Neuron(0.4, 4)
-    n2 = Neuron(0.8, 4)
+    n1 = Neuron(0.4, 2)
+    n2 = Neuron(0.4, 10)
     a = 0
     b = 4
     trainset = calc_train_set(a, b)
-    train(n1, trainset, 2000)
-    train(n2, trainset, 5000)
+   
+    err1 = train(n1, trainset, 5000)
+    err2 = train(n2, trainset, 5000)
+   
+    errors_by_norm = []
+    for i in numpy.arange(0.1, 1.1, 0.1):
+        n = Neuron(i, 4)
+        err = train(n, trainset, 5000)
+        errors_by_norm.append(err)
+        i += 0.1
 
+    errors_by_window_width = []
+    for i in numpy.arange(2, 22, 2):
+        n = Neuron(0.4, i)
+        err = train(n, trainset, 3000)
+        errors_by_window_width.append(err)
+        i += 0.1
+
+    
+    errors_by_epoch = []
+    for i in numpy.arange(500, 5500, 500):
+        n = Neuron(0.4, 4)
+        err = train(n, trainset, i)
+        errors_by_epoch.append(err)
+        i += 0.1
+    
     predicted = predict(n1, trainset)
     predicted2 = predict(n2, trainset)
-    print('-'*50,'\npredicted:\n', predicted)
-    
-    mplt.plot(calc_real_x(a, b), color = 'r')
-    mplt.plot(predicted, color='g')
-    mplt.plot(predicted2, color = 'b')
+    print('Summary error 1st neuron:', err1, '\t\tSummary error 2nd neuron:', err2)
+    print(err1, err2)
+    #mplt.plot(calc_train_set(a, 2*b), color = 'r')
+    #mplt.plot(predicted, color='g')
+    #mplt.plot(predicted2, color = 'b')
+    mplt.plot(range(len(errors_by_norm)), errors_by_norm, color='g')
+    mplt.plot(range(len(errors_by_window_width)), errors_by_window_width, color='b')
+    mplt.plot(range(len(errors_by_epoch)), errors_by_epoch, color='r')
+
+
+    mplt.plot()
     mplt.show()

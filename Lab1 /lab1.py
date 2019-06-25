@@ -66,11 +66,15 @@ class Neuron:
         else:
             return 0
 
-    def check(self, t_set):
+    def check(self, t_set, quiet = True):
         for vector, ideal_out in t_set.items():
             net = self.calc_net(vector)
             real_out = self.calc_out(net)
+            if not quiet:
+                print('Vector:', vector,'Neuronet out:', real_out, '\tIdeal out:', ideal_out)
             if real_out != ideal_out:
+                if not quiet:
+                    print('error')
                 return False
         return True
 
@@ -78,6 +82,8 @@ class Neuron:
         epoch = 0
         errors_data = []
         while True:
+            if not quiet:
+                print('weights before epoch', epoch, ': ', self.weights)
             summaryError = 0
             results = []
             for vector in training_set.keys():
@@ -92,7 +98,7 @@ class Neuron:
             errors_data.append(summaryError)
             if summaryError == 0:
                 if not quiet:
-                    print_epoch_results(results, epoch, summaryError, self.weights)
+                    print_epoch_results(results, epoch, summaryError)
                     print('--Done--')
                 return True, errors_data
             if not quiet:
@@ -102,11 +108,12 @@ class Neuron:
                 return False, errors_data
             epoch += 1
 
-def print_epoch_results(results, epoch, error, weights):
+def print_epoch_results(results, epoch, error, weights = None):
     print('#'*50, '\nEpoch:', epoch, 'Summary error:', error)
     print('results:\n', results, '\n')
-    formatted_weights = ['%.7f' % w for w in weights]
-    print('Weights:', formatted_weights)
+    if weights is not None:
+        formatted_weights = ['%.7f' % w for w in weights]
+        print('Weights (after correct):', formatted_weights)
 
 def calculate_training_set():
     result_vector = []
@@ -115,11 +122,11 @@ def calculate_training_set():
         result_vector.append(result)
     return result_vector
 
-def calc_min_training_set(neuron, t_set):
-    
+def calc_min_training_set(t_set):
     for i in range(1, 16):
         for sets in combinations(boolean_table, i):
-           # print(set_)
+            neuron = Neuron('threshold')
+            #print(set_)
             min_train_set = dict()
             for one_set in sets:
                 min_train_set[one_set] = t_set[one_set]
@@ -128,11 +135,13 @@ def calc_min_training_set(neuron, t_set):
                 check = neuron.check(t_set)
                 if check:
                     print('@'*50, '\nmin set is ', min_train_set)
-                    return min_train_set
+                    return min_train_set, neuron
 
 if __name__ == '__main__':
     t_set = calculate_training_set()
+
     t_set = dict(zip(boolean_table, t_set))
+    print(t_set.items())
 
     n1  = Neuron('threshold')
     _, errors_n1 = n1.train(t_set)
@@ -140,13 +149,11 @@ if __name__ == '__main__':
     _, errors_n2 = n2.train(t_set)
 
     n3 = Neuron('threshold')
-    min_set = calc_min_training_set(n3, t_set)
-    
-    #n4 = Neuron('threshold')
-    #_, errors_n4 = n4.train(t_set)
+    min_set, n4 = calc_min_training_set(t_set)
 
+    n4.check(t_set, False)
     mplt.plot(errors_n1, color='g')
     mplt.plot(errors_n2, color='b')
-   # mplt.plot(errors_n4, color='orange')
 
+    print(calculate_training_set())
     mplt.show()
