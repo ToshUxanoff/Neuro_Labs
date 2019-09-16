@@ -1,7 +1,7 @@
 import math
 
 class Neuron:
-    learningRate = 0.3
+    learningRate = 1
     def __init__(self, weights_):
         self.weights = weights_
 
@@ -17,9 +17,8 @@ class Neuron:
 
     def correct_weight(self, input_, delta):
         for j in range(len(self.weights)):
-            weight = self.weights[j]
             deltaw = self.learningRate * delta * input_[j]
-            self.weights[j] = weight + deltaw
+            self.weights[j] += deltaw
 
 class NeuralNet:
     Net = dict() #layer - neurons
@@ -67,7 +66,6 @@ class NeuralNet:
                 i = 0
                 for neuron in self.Net[0]:
                     print('correct in hidden layer, old =', neuron.weights, 'input:', input_, 'hl_delta[j]:', hidden_layer_delta[i])
-                    
                     neuron.correct_weight(input_, hidden_layer_delta[i])
                     print
                     i += 1
@@ -80,7 +78,7 @@ class NeuralNet:
                     j += 1
             #calc_err
             error = math.sqrt(summaryErr)
-            if error <  0.0001:
+            if error <  10**(-3):
                 print('Done!')
                 print_results(epoch, net_output, error)
                 return
@@ -93,8 +91,6 @@ def print_results(epoch, out, err):
 
 def calc_summary_err(ideal, output):
     sum_ = 0
-    #for i in range (len(ideal)):
-    #    sum_ += (ideal[i] - output[i])**2
     tmp = abs(ideal[0] - output[0])
     return tmp
 
@@ -110,5 +106,5 @@ def calc_delta_hl(out_layer, hl_out, out_delta):
     return delta_hl
     
 if __name__ == '__main__':
-    nn = NeuralNet(1, 2, 1)
-    nn.train([1, 2], [-3])
+    nn = NeuralNet(1, 1, 3)
+    nn.train([1, -3], [1,1,1])
