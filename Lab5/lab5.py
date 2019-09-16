@@ -2,43 +2,66 @@ import math
 #train set
 #---
 trainset = {
-    'zero': [1,1,1,1,1,1,-1,-1,-1,1,1,1,1,1,1],
-    'one':  [-1,1,-1,-1,1,1,1,1,1,1,-1,-1,-1,-1,1],
-    'nine': [1,1,1,-1,1,1,-1,1,-1,1,1,1,1,1,1],
+    'zero': [1, 1, 1, 1, 1,
+             1,-1,-1,-1, 1,
+             1,-1,-1,-1, 1,
+             1,-1,-1,-1, 1,
+             1, 1, 1, 1, 1],
+
+    'one':  [-1,-1, 1,-1,-1,
+             -1, 1, 1,-1,-1,
+              1,-1, 1,-1,-1,
+              -1,-1, 1,-1,-1,
+              1, 1, 1, 1, 1],
+    'nine': [1, 1, 1, 1, 1,
+             1,-1,-1,-1, 1,
+             1, 1 ,1 ,1 ,1,
+             -1,-1,-1,-1, 1,
+             1, 1, 1, 1, 1],
 }
 checkset = {
-    'zero': [-1,1,1,1,1,1,-1,-1,-1,1,1,1,1,1,1],
-    'one':  [1,1,-1,-1,1,1,1,1,1,1,-1,-1,-1,-1,1],
-    'nine': [1,1,-1,-1,-1,1,1,1,-1,1,1,1,1,1,1],    
-}
-#1 1 1
-#1 0 1
-#1 0 1
-#1 0 1
-#1 1 1
-    
-#0 1 0 
-#1 1 0
-#0 1 0
-#0 1 0
-#1 1 1    
+    'zero': [1,-1,-1, 1, 1,
+             1,-1,-1,-1, 1,
+             1,-1,-1,-1, 1,
+             1,-1,-1,-1, 1,
+             1, 1, 1, 1, 1],
 
-#1 1 1
-#1 0 1
-#1 1 1
-#0 0 1
-#1 1 1
+    'one':  [ -1,-1, 1,-1,-1,
+              -1, 1, 1, 1,-1,
+               1,-1, 1,-1, 1,
+              -1,-1, 1,-1,-1,
+               1, 1, 1, 1, 1],
+    'nine': [ 1, 1, 1, 1, 1,
+              1,-1, 1,-1, 1,
+              1, 1 ,1 ,1 ,1,
+             -1,-1,-1,-1, 1,
+              1, 1, 1, 1, 1],
+}
+#1 1 1 1 1
+#1 0 0 0 1
+#1 0 0 0 1
+#1 0 0 0 1
+#1 1 1 1 1
+    
+#0 0 1 0 0 
+#0 1 1 0 0 
+#1 0 1 0 0
+#0 0 1 0 0
+#1 1 1 1 1  
+
+#1 1 1 1 1
+#1 0 0 0 1
+#1 1 1 1 1
+#0 0 0 0 1
+#1 1 1 1 1
 #---
 
 
     
 class NeuralNet:
-
-    #self.Net = []
-    
     def __init__(self):
         self.weights_matrix = []
-        self.K = 15
+        self.K = 25
         self.Y = []
         self.nets = []
         for i in range(self.K):
@@ -69,17 +92,14 @@ class NeuralNet:
     def work(self, image):
         epoch = 1
         self.Y = image
-        print('start with:', self.Y)
-
         while True:
             y = []
-            
             this_net = []
             last_net = this_net
             for k in range(self.K):
                 net = 0
                 sum1 = 0
-                for j in range(k): #k-1?
+                for j in range(k):
                     sum1 += self.weights_matrix[j][k]*self.Y[j]
                 sum2 = 0
                 for j in range(k+1, self.K):
@@ -93,17 +113,32 @@ class NeuralNet:
                 y.append(out)
             
             if  last_net == this_net:
-                print('result: ', y, 'epoch:', epoch)
-                return
+                result_print(y)
+                return y
             if epoch > 200:
                 print('cant recognize')
                 return
             epoch +=1
             
-    
-                
+def result_print(result):
+    tmp = ""
+    for i in range(len(result)):
+        if i % 5 == 0:
+            tmp += '\n'
+        if result[i] == -1:
+            tmp+= ' '
+        else:
+            tmp+= '#'
+    print(tmp)
 if __name__ == '__main__':
     nn = NeuralNet()
     nn.initialize()
-    
+    print('Wrong images:')
+    result_print(checkset['one'])
+    result_print(checkset['nine'])
+    result_print(checkset['zero'])
+    print('-'*50)
+    print('Result:')
     nn.work(checkset['one'])
+    nn.work(checkset['nine'])
+    nn.work(checkset['zero'])
