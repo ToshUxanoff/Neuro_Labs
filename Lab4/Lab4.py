@@ -37,7 +37,6 @@ class NeuralNet:
         for neuron in self.Net[0]:
             net = neuron.calc_net(input_)
             hl_out.append(neuron.calc_out(net))
-            print('hl_out debug:', hl_out, net, input_)
         net_output = []
         for out_neuron in self.Net[1]:
             net = out_neuron.calc_net(hl_out)
@@ -60,25 +59,20 @@ class NeuralNet:
             out_delta = delta * calc_derivative(net_output[0])
 
             hidden_layer_delta = calc_delta_hl(self.Net[1], hidden_layer_output, out_delta)
-            print('\t\t\tHL_DELTA:', hidden_layer_delta)
             #3rd stage
             if hidden_layer_delta:
                 i = 0
                 for neuron in self.Net[0]:
-                    print('correct in hidden layer, old =', neuron.weights, 'input:', input_, 'hl_delta[j]:', hidden_layer_delta[i])
                     neuron.correct_weight(input_, hidden_layer_delta[i])
-                    print
                     i += 1
             if out_delta:
                 j = 0
                 for neuron in self. Net[1]:
-                    print('correct in out layer, old =', neuron.weights, 'hl_out:', hidden_layer_output, 'out_delta[j]:', out_delta)
                     neuron.correct_weight(hidden_layer_output, out_delta)
-                    print('new =', neuron.weights)
                     j += 1
             #calc_err
             error = math.sqrt(summaryErr)
-            if error <  10**(-3):
+            if error <  10**(-4):
                 print('Done!')
                 print_results(epoch, net_output, error)
                 return
