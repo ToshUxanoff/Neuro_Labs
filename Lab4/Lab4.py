@@ -107,4 +107,4 @@ def calc_delta_hl(out_layer, hl_out, out_delta):
     
 if __name__ == '__main__':
     nn = NeuralNet(1, 1, 3)
-    nn.train([1, -3], [1,1,1])
+    nn.train([1, -3], [0.1,0.1,0.1])
