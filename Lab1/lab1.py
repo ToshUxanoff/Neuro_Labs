@@ -121,7 +121,7 @@ def inverted(x) :
 def calculate_training_set():
     result_vector = []
     for vector in boolean_table:
-        result = int( (inverted(vector[0]) or inverted(vector[1]) or inverted(vector[2])) and (inverted(vector[1]) or inverted(vector[2]) or inverted(vector[3])) ) #by variant
+        result = int( (inverted(vector[0]) or inverted(vector[1]) or inverted(vector[2])) and (inverted(vector[1]) or inverted(vector[2]) or vector[3]) ) #by variant
         result_vector.append(result)
     return result_vector
 
