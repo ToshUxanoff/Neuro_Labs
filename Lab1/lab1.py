@@ -132,12 +132,12 @@ def calc_min_training_set(t_set):
             min_train_set = dict()
             for one_set in sets:
                 min_train_set[one_set] = t_set[one_set]
-            result, _ = neuron.train(min_train_set, quiet = True)
+            result, errors_data = neuron.train(min_train_set, quiet = True)
             if result:
                 check = neuron.check(t_set)
                 if check:
                     print('@'*50, '\nmin set is ', min_train_set)
-                    return min_train_set, neuron
+                    return neuron, errors_data
 
 if __name__ == '__main__':
     t_set = calculate_training_set()
@@ -151,11 +151,11 @@ if __name__ == '__main__':
     _, errors_n2 = n2.train(t_set)
 
     n3 = Neuron('threshold')
-    min_set, n4 = calc_min_training_set(t_set)
+    n4, errors_min = calc_min_training_set(t_set)
 
-    n4.check(t_set, False)
     mplt.plot(errors_n1, color='g')
     mplt.plot(errors_n2, color='b')
+    mplt.plot(errors_min, color='r')
 
     print(calculate_training_set())
     mplt.show()
