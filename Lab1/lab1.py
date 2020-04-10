@@ -53,7 +53,7 @@ class Neuron:
         if self.function_type == 'threshold':
             return 1
         elif self.function_type == 'sigmoid':
-            return 0.5 * ( 1 / ((1 + abs(self.calc_sig_out(net)))**2) )
+            return 0.5 * ( 1 / (1 + abs(net)**2) )
 
     def calc_out(self, net):
         out = 0
