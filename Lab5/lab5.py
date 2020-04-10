@@ -2,57 +2,59 @@ import math
 #train set
 #---
 trainset = {
-    'zero': [1, 1, 1, 1, 1,
-             1,-1,-1,-1, 1,
-             1,-1,-1,-1, 1,
-             1,-1,-1,-1, 1,
+    'two': [ 1, 1, 1, 1, 1,
+             -1,-1,-1,-1,1,
+             1, 1, 1, 1, -1,
+             1,-1,-1,-1,-1,
              1, 1, 1, 1, 1],
 
-    'one':  [-1,-1, 1,-1,-1,
-             -1, 1, 1,-1,-1,
-              1,-1, 1,-1,-1,
-              -1,-1, 1,-1,-1,
-              1, 1, 1, 1, 1],
-    'nine': [1, 1, 1, 1, 1,
+    'four':  [1,-1,-1,-1, 1,
+             1,-1,-1,-1, 1,
+             1, 1, 1, 1, 1,
+            -1,-1,-1,-1, 1,
+            -1,-1,-1,-1, 1],
+
+    'eight': [1, 1, 1, 1, 1,
              1,-1,-1,-1, 1,
              1, 1 ,1 ,1 ,1,
-             -1,-1,-1,-1, 1,
+             1,-1,-1,-1, 1,
              1, 1, 1, 1, 1],
 }
 checkset = {
-    'zero': [1,-1,-1, 1, 1,
-             1,-1,-1,-1, 1,
-             1,-1,-1,-1, 1,
-             1,-1,-1,-1, 1,
-             1, 1, 1, 1, 1],
-
-    'one':  [ -1,-1, 1,-1,-1,
-              -1, 1, 1, 1,-1,
-               1,-1, 1,-1, 1,
-              -1,-1, 1,-1,-1,
-               1, 1, 1, 1, 1],
-    'nine': [ 1, 1, 1, 1, 1,
-              1,-1, 1,-1, 1,
-              1, 1 ,1 ,1 ,1,
+    'two': [ 1, -1, -1, 1,1,
              -1,-1,-1,-1, 1,
-              1, 1, 1, 1, 1],
+             1, 1, 1, 1, -1,
+             1,-1,-1,-1,-1,
+             1, 1, 1, 1, -1],
+
+    'four':  [1,-1,-1,-1, 1,
+             1,-1,-1,-1, 1,
+             1, 1, 1, 1, 1,
+            -1,-1,1,-1, 1,
+            -1,-1,1,-1, 1],
+
+    'eight': [1, 1, 1, 1, 1,
+             1,-1, 1,-1, 1,
+             1, 1 ,1 ,1 ,1,
+             1,-1, 1,-1, 1,
+             1, 1, 1, 1, 1],
 }
 #1 1 1 1 1
-#1 0 0 0 1
-#1 0 0 0 1
-#1 0 0 0 1
+#0 0 0 0 1
+#1 1 1 1 1
+#1 0 0 0 0
 #1 1 1 1 1
     
-#0 0 1 0 0 
-#0 1 1 0 0 
-#1 0 1 0 0
-#0 0 1 0 0
-#1 1 1 1 1  
+#1 0 0 0 1 
+#1 0 0 0 1 
+#1 1 1 1 1
+#0 0 0 0 1
+#0 0 0 0 1  
 
 #1 1 1 1 1
 #1 0 0 0 1
 #1 1 1 1 1
-#0 0 0 0 1
+#1 0 0 0 1
 #1 1 1 1 1
 #---
 
@@ -90,34 +92,27 @@ class NeuralNet:
         return result
 
     def work(self, image):
-        epoch = 1
         self.Y = image
+        epoch = 0
         while True:
             y = []
             this_net = []
             last_net = this_net
             for k in range(self.K):
                 net = 0
-                sum1 = 0
-                for j in range(k):
-                    sum1 += self.weights_matrix[j][k]*self.Y[j]
-                sum2 = 0
-                for j in range(k+1, self.K):
-                    sum2 += self.weights_matrix[j][k]*self.Y[j]
-                net = sum1 + sum2
+                for j in range(self.K):
+                    if j == k:
+                        continue
+                    net += self.weights_matrix[j][k]*self.Y[j]
                 out = self.calc_out(net, epoch)
                 if out != self.Y[k]:
                     self.Y[k] = out
                 self.nets.append(net)
                 this_net.append(net)
                 y.append(out)
-            
             if  last_net == this_net:
                 result_print(y)
                 return y
-            if epoch > 200:
-                print('cant recognize')
-                return
             epoch +=1
             
 def result_print(result):
@@ -134,11 +129,11 @@ if __name__ == '__main__':
     nn = NeuralNet()
     nn.initialize()
     print('Wrong images:')
-    result_print(checkset['one'])
-    result_print(checkset['nine'])
-    result_print(checkset['zero'])
+    result_print(checkset['two'])
+    result_print(checkset['four'])
+    result_print(checkset['eight'])
     print('-'*50)
     print('Result:')
-    nn.work(checkset['one'])
-    nn.work(checkset['nine'])
-    nn.work(checkset['zero'])
+    nn.work(checkset['two'])
+    nn.work(checkset['four'])
+    nn.work(checkset['eight'])

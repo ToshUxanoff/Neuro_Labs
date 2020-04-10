@@ -72,7 +72,7 @@ class NeuralNet:
                     j += 1
             #calc_err
             error = math.sqrt(summaryErr)
-            if error <  10**(-4):
+            if error <  10**(-6):
                 print('Done!')
                 print_results(epoch, net_output, error)
                 return
@@ -100,5 +100,5 @@ def calc_delta_hl(out_layer, hl_out, out_delta):
     return delta_hl
     
 if __name__ == '__main__':
-    nn = NeuralNet(1, 1, 3)
-    nn.train([1, -3], [0.1,0.1,0.1])
+    nn = NeuralNet(1, 2, 1)
+    nn.train([1, -3], [-0.1])
